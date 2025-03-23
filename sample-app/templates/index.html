@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto-Scale Demo App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .metric {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .meter {
+            flex-grow: 1;
+            height: 30px;
+            background-color: #eee;
+            border-radius: 15px;
+            margin: 0 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        .meter-fill {
+            height: 100%;
+            background-color: #4CAF50;
+            width: 0%;
+            transition: width 0.5s;
+        }
+        .buttons {
+            margin-top: 30px;
+            text-align: center;
+        }
+        button {
+            padding: 10px 15px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .warning {
+            background-color: #ff6347 !important;
+        }
+    </style>
+</head>
+<body>
+    <h1>Auto-Scale Demo Application</h1>
+    <div class="dashboard">
+        <div class="card">
+            <h2>System Information</h2>
+            <p><strong>Hostname:</strong> {{ system_info.hostname }}</p>
+            <p><strong>Platform:</strong> {{ system_info.platform }}</p>
+            <p><strong>Processor:</strong> {{ system_info.processor }}</p>
+            <p><strong>CPU Cores:</strong> {{ system_info.cpu_cores }}</p>
+            <p><strong>Total Memory:</strong> {{ system_info.memory_total }}</p>
+        </div>
+        <div class="card">
+            <h2>Resource Usage</h2>
+            <div class="metric">
+                <span>CPU:</span>
+                <div class="meter">
+                    <div class="meter-fill" id="cpu-meter" style="width: {{ metrics.cpu }}%;"></div>
+                </div>
+                <span id="cpu-value">{{ metrics.cpu }}%</span>
+            </div>
+            <div class="metric">
+                <span>Memory:</span>
+                <div class="meter">
+                    <div class="meter-fill" id="memory-meter" style="width: {{ metrics.memory }}%;"></div>
+                </div>
+                <span id="memory-value">{{ metrics.memory }}%</span>
+            </div>
+            <div class="metric">
+                <span>Disk:</span>
+                <div class="meter">
+                    <div class="meter-fill" id="disk-meter" style="width: {{ metrics.disk }}%;"></div>
+                </div>
+                <span id="disk-value">{{ metrics.disk }}%</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="buttons">
+        <h3>Generate Load</h3>
+        <button onclick="generateCpuLoad(30)">CPU Load (30s)</button>
+        <button onclick="generateCpuLoad(60)">CPU Load (60s)</button>
+        <button onclick="generateCpuLoad(120)">CPU Load (120s)</button>
+        <br><br>
+        <button onclick="allocateMemory(100)">Memory (100MB)</button>
+        <button onclick="allocateMemory(500)">Memory (500MB)</button>
+    </div>
+
+    <script>
+        // Function to update metrics periodically
+        function updateMetrics() {
+            fetch(window.location.href)
+                .then(response => response.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    
+                    // Get CPU, memory, and disk values
+                    const cpuValue = parseFloat(doc.getElementById('cpu-value').textContent);
+                    const memoryValue = parseFloat(doc.getElementById('memory-value').textContent);
+                    const diskValue = parseFloat(doc.getElementById('disk-value').textContent);
+                    
+                    // Update the UI
+                    document.getElementById('cpu-value').textContent = cpuValue + '%';
+                    document.getElementById('memory-value').textContent = memoryValue + '%';
+                    document.getElementById('disk-value').textContent = diskValue + '%';
+                    
+                    // Update the meters
+                    document.getElementById('cpu-meter').style.width = cpuValue + '%';
+                    document.getElementById('memory-meter').style.width = memoryValue + '%';
+                    document.getElementById('disk-meter').style.width = diskValue + '%';
+                    
+                    // Apply warning colors if above 75%
+                    document.getElementById('cpu-meter').className = 'meter-fill' + (cpuValue > 75 ? ' warning' : '');
+                    document.getElementById('memory-meter').className = 'meter-fill' + (memoryValue > 75 ? ' warning' : '');
+                    document.getElementById('disk-meter').className = 'meter-fill' + (diskValue > 75 ? ' warning' : '');
+                });
+        }
+        
+        // Update metrics every 3 seconds
+        setInterval(updateMetrics, 2000);
+        
+        // Function to generate CPU load
+        function generateCpuLoad(seconds) {
+            fetch(`/load/cpu/${seconds}`)
+                .then(response => response.text())
+                .then(text => alert(text));
+        }
+        
+        // Function to allocate memory
+        function allocateMemory(mb) {
+            fetch(`/load/memory/${mb}`)
+                .then(response => response.text())
+                .then(text => alert(text));
+        }
+    </script>
+</body>
+</html>
