@@ -88,10 +88,12 @@ python autoscale.py
 ## **File Structure**  
 ```
 auto-scale-project/  
-├── sample-app/  
+├── sample-app/
+│   ├── template/
+│   │  ├── index.html    
 │   ├── app.py  
 │   ├── requirements.txt  
 ├── autoscale.py  
 ├── README.md  
-├── .gitignore  
+├── architecture.png
 ```
