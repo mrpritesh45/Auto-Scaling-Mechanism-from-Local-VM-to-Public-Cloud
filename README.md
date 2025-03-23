@@ -23,7 +23,7 @@ Ensure the following dependencies are installed and configured before proceeding
 ### **1. Clone the Repository**  
 Clone the project from the GitHub repository:  
 ```bash
-git clone https://github.com/yourusername/auto-scale-project.git
+git clone https://github.com/mrpritesh45/Auto-Scaling-Mechanism-from-Local-VM-to-Public-Cloud.git
 cd auto-scale-project
 ```
 
